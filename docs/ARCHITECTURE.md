@@ -41,6 +41,32 @@ flowchart LR
 
 `Generate` in the UI performs draft creation followed by confirmation. The backend still preserves the draft/confirm boundary so capture and draft creation never consume provider quota.
 
+## Skill Invocation Architecture
+
+```mermaid
+flowchart LR
+  UI["React Studio"] --> API["Fastify API"]
+  API --> Storage["Local data store<br/>captures / jobs / decks"]
+  API --> CV["OpenCV paper cleanup"]
+  API --> Gate["Generate gate"]
+
+  Gate --> Media{"media job"}
+  Gate --> Deck{"deck job"}
+
+  Media --> LibTV["libtv-skill<br/>create / upload / poll / download"]
+  LibTV --> MediaResult["current-job image/video"]
+
+  Deck --> Planner{"planner"}
+  Planner --> Gemini["gemini-cli<br/>stdout only"]
+  Planner --> Codex["codex CLI + slidev skill<br/>stdout only"]
+  Gemini --> Mermaid["Mermaid or Slidev source"]
+  Codex --> Mermaid
+  Mermaid --> Renderer["Paper Studio renderer<br/>orthogonal SVG + slides.md"]
+  Renderer --> Editable["pptxgenjs editable PPTX"]
+```
+
+Runtime skill contracts are documented in [`docs/SKILLS.md`](SKILLS.md). Private local skill folders are intentionally not vendored into this repository.
+
 ## Flowchart Output Path
 
 For `Sketch to Deck -> Flowchart page`:
@@ -94,4 +120,3 @@ These directories are ignored by git. They may contain private camera frames, sp
 - Missing provider setup appears as a setup-blocker, not a silent fallback.
 - Google Cloud / Vertex / API key pay-as-you-go routes are not enabled by default.
 - Video and image prompts use conservative defaults unless the user explicitly selects otherwise.
-

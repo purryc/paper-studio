@@ -12,6 +12,32 @@ The current prototype focuses on a reliable explicit workflow:
 
 The app keeps runtime captures, generated media, transcripts, and job records local under `data/`. That folder is ignored by git.
 
+## Calling Mechanism
+
+```mermaid
+flowchart LR
+  User["User<br/>paper sketch + intent"] --> UI["React Studio<br/>Capture / Review / Intent / Generate"]
+  UI --> API["Fastify Local API<br/>127.0.0.1:8787"]
+
+  API --> Camera["Camera Source Layer<br/>Desk View / Continuity / screen / upload"]
+  Camera --> Cleanup["OpenCV Cleanup<br/>paper focus + line cleanup"]
+  Cleanup --> Job["Draft -> Generate Gate<br/>local job record"]
+
+  Job --> Mode{"Output mode"}
+  Mode -->|image / video| LibTV["libtv-skill contract<br/>Seedream Lite / Kling O3"]
+  Mode -->|deck| Planner{"Deck planner"}
+
+  Planner --> Gemini["Gemini CLI<br/>stdout Mermaid / Slidev markdown"]
+  Planner --> Codex["Codex CLI + slidev skill<br/>stdout Mermaid / Slidev markdown"]
+  Planner --> Renderer["Backend Renderer<br/>slides.md + orthogonal preview"]
+
+  Renderer --> PPTX["pptxgenjs<br/>editable PPTX"]
+  LibTV --> Result["Inline result<br/>image / video"]
+  PPTX --> Downloads["Download assets<br/>.md / .mmd / .pptx"]
+```
+
+The repo documents skill contracts instead of vendoring private local skill folders. See [`docs/SKILLS.md`](docs/SKILLS.md).
+
 ## Current Workflows
 
 ### Sketch To Media
@@ -88,6 +114,7 @@ PAPER_STUDIO_ALLOW_LIVE=1 npm run test:live:deck:codex
 - API contract: [`specs/001-mac-paper-studio/contracts/openapi.yaml`](specs/001-mac-paper-studio/contracts/openapi.yaml)
 - Dependencies: [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md)
 - Architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- Skill map: [`docs/SKILLS.md`](docs/SKILLS.md)
 
 ## Repository Hygiene
 
@@ -106,4 +133,3 @@ Ignored local runtime state:
 - `data/`
 - `.env`
 - `.DS_Store`
-
