@@ -12,6 +12,16 @@ Paper Studio integrates with local agent skills and CLI agents, but this reposit
 | Slidev CLI | `server/deck.js` | Builds local deck previews from generated `slides.md` when available | Deck preview |
 | `pptxgenjs` | `server/deck.js` | Generates native editable PowerPoint shapes and connectors | Editable flowchart PPTX |
 
+## Planned OpenClaw Integration
+
+OpenClaw should call Paper Studio's local API or wrap it as a thin skill. It should not duplicate the backend workflow. The stable contract is:
+
+```text
+capture/upload -> POST /api/jobs -> POST /api/jobs/:id/confirm -> poll GET /api/jobs/:id
+```
+
+See [`LINUX_OPENCLAW.md`](LINUX_OPENCLAW.md) for the Linux/OpenClaw migration plan.
+
 ## Planning And Design Skills
 
 | Skill | How it influenced this repo | Runtime dependency |

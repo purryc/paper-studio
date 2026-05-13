@@ -115,6 +115,7 @@ PAPER_STUDIO_ALLOW_LIVE=1 npm run test:live:deck:codex
 - Dependencies: [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md)
 - Architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - Skill map: [`docs/SKILLS.md`](docs/SKILLS.md)
+- Linux and OpenClaw migration plan: [`docs/LINUX_OPENCLAW.md`](docs/LINUX_OPENCLAW.md)
 
 ## Repository Hygiene
 

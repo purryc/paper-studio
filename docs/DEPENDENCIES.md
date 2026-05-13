@@ -2,6 +2,8 @@
 
 This project is a local Mac prototype. Most functionality works without paid cloud APIs, but external generation providers require local setup.
 
+For Linux and OpenClaw migration details, see [`LINUX_OPENCLAW.md`](LINUX_OPENCLAW.md).
+
 ## Required For Development
 
 | Dependency | Purpose | Install |
@@ -46,6 +48,8 @@ Flowchart preview does not rely on Mermaid auto-layout for the final visual. The
 | `PAPER_STUDIO_ALLOW_LIVE=1` | Live tests only | Explicit opt-in for live provider checks |
 | `PAPER_STUDIO_LIVE_PROVIDERS` | Live tests only | Selects live provider check scope |
 
+Planned Linux/OpenClaw variables are documented in [`LINUX_OPENCLAW.md`](LINUX_OPENCLAW.md). They are not all implemented in the current Mac-first prototype yet.
+
 ## Install Check
 
 Run:
@@ -78,4 +82,3 @@ Do not commit:
 - `dist/`
 - `node_modules/`
 - generated captures, transcripts, LibTV outputs, local deck runs, or camera logs
-
