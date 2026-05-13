@@ -1,0 +1,34 @@
+{
+  "name": "paper-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:bg": "node scripts/dev-daemon.mjs start",
+    "dev:stop": "node scripts/dev-daemon.mjs stop",
+    "dev:status": "node scripts/dev-daemon.mjs status",
+    "dev:server": "node server/index.js",
+    "dev:client": "vite --host 127.0.0.1 --port 5173",
+    "lint": "node scripts/lint.mjs",
+    "build": "vite build",
+    "test:smoke": "PAPER_STUDIO_MOCK_PROVIDERS=1 node scripts/smoke-test.mjs",
+    "test:live:libtv": "PAPER_STUDIO_LIVE_PROVIDERS=libtv node scripts/live-libtv-check.mjs",
+    "test:live:deck:gemini": "PAPER_STUDIO_LIVE_PROVIDERS=gemini node scripts/live-deck-check.mjs gemini-cli",
+    "test:live:deck:codex": "PAPER_STUDIO_LIVE_PROVIDERS=codex node scripts/live-deck-check.mjs codex-slidev"
+  },
+  "dependencies": {
+    "@fastify/multipart": "^9.3.0",
+    "@fastify/static": "^8.3.0",
+    "@vitejs/plugin-react": "^5.1.1",
+    "fastify": "^5.6.2",
+    "pptxgenjs": "^4.0.1",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "vite": "^7.2.4"
+  },
+  "devDependencies": {
+    "@slidev/cli": "^52.4.0",
+    "playwright-chromium": "^1.57.0"
+  }
+}

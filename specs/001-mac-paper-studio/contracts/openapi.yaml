@@ -1,0 +1,319 @@
+openapi: 3.1.0
+info:
+  title: Paper Studio Local API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8787
+paths:
+  /api/health:
+    get:
+      summary: Return local service health and tool preflight.
+      responses:
+        "200":
+          description: Health payload.
+  /api/models:
+    get:
+      summary: Return model catalog entries and setup status.
+      responses:
+        "200":
+          description: Model catalog.
+  /api/cameras:
+    get:
+      summary: Return server-visible AVFoundation camera list for diagnostics.
+      responses:
+        "200":
+          description: Camera list used by the camera source chips.
+  /api/cameras/frame:
+    get:
+      summary: Return a single JPEG frame from the selected AVFoundation source.
+      parameters:
+        - name: deviceLabel
+          in: query
+          schema:
+            type: string
+        - name: deviceIndex
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: JPEG frame.
+  /api/cameras/stream:
+    get:
+      summary: Return an MJPEG preview stream from the selected AVFoundation source.
+      parameters:
+        - name: deviceLabel
+          in: query
+          schema:
+            type: string
+        - name: deviceIndex
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Multipart MJPEG stream.
+  /api/captures:
+    post:
+      summary: Upload a captured sketch image and create raw/clean capture files.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+                sourceDeviceLabel:
+                  type: string
+                sourceKind:
+                  type: string
+                  enum: [desk-view, camera, upload]
+                  default: upload
+      responses:
+        "200":
+          description: Capture record with raw and clean image URLs.
+        "400":
+          description: Invalid upload or cleanup failure.
+  /api/captures/server-snapshot:
+    post:
+      summary: Capture a server-side still frame from an AVFoundation camera source.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceIndex:
+                  type: integer
+                deviceLabel:
+                  type: string
+      responses:
+        "200":
+          description: Capture record with raw image, paper crop, and cleaned sketch URLs.
+  /api/transcriptions:
+    post:
+      summary: Upload audio for local transcription or submit manual text.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                audio:
+                  type: string
+                  format: binary
+                engine:
+                  type: string
+                  enum: [whisper, browser, manual]
+                  default: whisper
+                text:
+                  type: string
+      responses:
+        "200":
+          description: Transcript record.
+  /api/sources/folder-upload:
+    post:
+      summary: Upload a browser-selected source folder for deck grounding.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                folderName:
+                  type: string
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "200":
+          description: Source set id, folder name, file counts, and source manifest.
+        "400":
+          description: Folder contains no supported source files.
+  /api/jobs:
+    post:
+      summary: Create a draft job without calling any generation provider.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJobRequest"
+      responses:
+        "200":
+          description: Draft job record.
+  /api/jobs/{id}/confirm:
+    post:
+      summary: Confirm a draft job and start generation if setup is available.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Queued/running/completed job or setup-blocked failure.
+        "409":
+          description: Job is not in draft state or provider setup is unavailable.
+  /api/jobs/{id}:
+    get:
+      summary: Return job status and outputs.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Job record.
+        "404":
+          description: Job not found.
+  /api/jobs/{id}/download/{asset}:
+    get:
+      summary: Download a generated deck artifact through an attachment response.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [slides.md, editable-flowchart.pptx, deck.pptx, slidev-export.pptx, diagram.mmd]
+      responses:
+        "200":
+          description: Artifact stream with Content-Disposition.
+        "404":
+          description: Job or artifact not found.
+  /api/jobs/{id}/save/{asset}:
+    post:
+      summary: Save a generated deck artifact directly into the local Downloads folder.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [slides.md, editable-flowchart.pptx, deck.pptx, slidev-export.pptx, diagram.mmd]
+      responses:
+        "200":
+          description: Saved filename and absolute local path.
+        "404":
+          description: Job or artifact not found.
+components:
+  schemas:
+    CreateJobRequest:
+      type: object
+      required: [mode, captureId, prompt]
+      properties:
+        mode:
+          type: string
+          enum: [image, video, deck]
+        captureId:
+          type: string
+        transcriptId:
+          type: string
+        prompt:
+          type: string
+        providerId:
+          type: string
+          enum: [libtv, gemini-cli, codex-slidev]
+          default: libtv
+        creativeStyle:
+          type: string
+          enum: [short-video-ad, illustration, watercolor, cinematic-realism]
+          default: short-video-ad
+        deckEngine:
+          type: string
+          enum: [gemini-cli, codex-slidev]
+          default: gemini-cli
+        deckStyle:
+          type: string
+          enum: [apple-keynote]
+          default: apple-keynote
+        sketchType:
+          type: string
+          enum: [structure, layout, mixed, flowchart]
+          default: structure
+        deckOutput:
+          type: string
+          enum: [full-deck, flowchart-page]
+          default: full-deck
+        sourceRoot:
+          type: string
+          description: Optional legacy local folder used as grounding context for deck jobs. Not exposed in the V1 UI.
+        sourceSetId:
+          type: string
+          description: Optional uploaded source folder set id returned by /api/sources/folder-upload.
+        sourcePolicy:
+          type: string
+          enum: [auto, "on", "off"]
+          default: auto
+          description: Auto uses selected sources only when the prompt explicitly asks for references, documents, folders, or sources.
+        exportFormats:
+          type: array
+          default: [web, pptx]
+          items:
+            type: string
+            enum: [web, pptx]
+        slideCountTarget:
+          type: integer
+          enum: [6, 8, 10]
+          default: 8
+        modelId:
+          type: string
+          description: Future video or Gemini image route field.
+          default: veo-3.1-lite-generate-001
+        durationSeconds:
+          type: integer
+          enum: [4, 6, 8]
+          default: 4
+        aspectRatio:
+          type: string
+          enum: ["4:3", "16:9", "9:16", "1:1"]
+          default: "4:3"
+        resolution:
+          type: string
+          enum: ["720p", "1080p"]
+          default: "720p"
+        sampleCount:
+          type: integer
+          minimum: 1
+          maximum: 4
+          default: 1
+        fps:
+          type: integer
+          default: 24
+        audioEnabled:
+          type: boolean
+          default: false
+        promptRewriteEnabled:
+          type: boolean
+          default: true
+        billingPolicy:
+          type: string
+          default: no-payg-default
+        triggerSource:
+          type: string
+          enum: [ui, hand_activity, speech_activity, combined_activity]
+          default: ui
